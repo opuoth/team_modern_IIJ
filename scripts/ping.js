@@ -1,19 +1,15 @@
 // Description:
 //   Utility commands surrounding Hubot uptime.
 //
-// Commands:
-//   ping - Reply with pong
-//   echo <text> - Reply back with <text>
-//   time - Reply with current time
 'use strict';
 
 
 
 module.exports = (robot) => {
+
   let id;//setInterval()を変数にいれる
   const tm = 5000;//時間
   
-
   /* 最初に表示するメッセージ */
   robot.join((res) => {
     res.send({
@@ -21,8 +17,9 @@ module.exports = (robot) => {
     });
   });
 
+
   /* 自転車を返す場所を探す処理と利用料金の目安を表示し、timerをstopする */
-  robot.respond(/F$/i, (res) => {
+  robot.respond(/返却$/, (res) => {
      /**タイマーのストップと利用料金の目安を表示 */
      clearInterval(id);
      //res.send(`利用料金の目安:${i * 200}円\n利用時間:${i}時間`);
@@ -50,7 +47,7 @@ module.exports = (robot) => {
       res.send('自転車置き場3');
       res.send({
         question: 'どの自転車置き場を選択しますか?',
-        options: ['1を借りる', '2を借りる', '3を借りる']
+        options: ['自転車置き場11', '自転車置き場22', '自転車置き場33']
       });
     } else {
       res.send(`探したくなったら「Hey」って言ってね`);
@@ -68,55 +65,32 @@ module.exports = (robot) => {
   });
 
 
-
-  /**自転車置き場の場所をユーザに選んでもらい、それを表示する */
+  /** 自転車置き場の場所をユーザに選んでもらい、それを表示する */
   robot.respond('select', (res) => {
    
     let i = 1;//１時間毎の時間を計測
 
-    if (res.json.options[res.json.response] === '1を借りる') {
+    if (res.json.options[res.json.response] === '自転車置き場11') {
       res.send(`自転車1を借ました`);
-      /*１時間毎に通知処理 */
-      res.send({
-        text: '返す時はFを押してね',
-        onsend: () => {
-          let fn = () => {
-            res.send(`${i}時間経過しました`);
-            res.send(`現在の料金目安は${i * 200}円`);
-            i++;
-          }
-          id = setInterval(fn, tm);
-        }
-      });
-    } else if (res.json.options[res.json.response] === '2を借りる') {
+    } else if (res.json.options[res.json.response] === '自転車置き場22') {
       res.send(`自転車2を借ました`);
-      /*１時間毎に通知処理 */
-      res.send({
-        text: '返す時はFを押してね',
-        onsend: () => {
-          let fn = () => {
-            res.send(`${i}時間経過しました`);
-            res.send(`現在の料金目安は${i * 200}円`);
-            i++;
-          }
-          id = setInterval(fn, tm);
-        }
-      });
-    } else if (res.json.options[res.json.response] === '3を借りる') {
+    } else if (res.json.options[res.json.response] === '自転車置き場33') {
       res.send(`自転車3を借ました`);
-      /*１時間毎に通知処理 */
-      res.send({
-        text: '返す時はFを押してね',
-        onsend: () => {
-          let fn = () => {
-            res.send(`${i}時間経過しました`);
-            res.send(`現在の料金目安は${i * 200}円`);
-            i++;
-          }
-          id = setInterval(fn, tm);
-        }
-      });
     }
+    res.send({
+      text: '返す時は返却を入力すると,周辺の自転車置き場を表示します',
+      onsend: () => {
+        let fn = () => {
+          res.send(`${i}時間経過しました`);
+          res.send(`現在の料金目安は${i * 200}円`);
+          i++;
+        }
+        id = setInterval(fn, tm);
+      }
+    });
   });
+
+
+
 
 }

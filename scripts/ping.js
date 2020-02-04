@@ -10,11 +10,9 @@
 
 
 module.exports = (robot) => {
-
-  const tm = 10000;//時間
-  let i = 1;//１時間毎の時間を計測
-  let flag = true;//push通知するフラグ
-  let id;
+  let id;//setInterval()を変数にいれる
+  const tm = 5000;//時間
+  
 
   /* 最初に表示するメッセージ */
   robot.join((res) => {
@@ -27,7 +25,7 @@ module.exports = (robot) => {
   robot.respond(/F$/i, (res) => {
      /**タイマーのストップと利用料金の目安を表示 */
      clearInterval(id);
-     res.send(`利用料金の目安:${i * 200}円\n利用時間:${i}時間`);
+     //res.send(`利用料金の目安:${i * 200}円\n利用時間:${i}時間`);
     /**返す場所の候補を表示する */
     res.send(`現在地周辺の自転車置き場を3つ表示します`);
     res.send('自転車置き場1');
@@ -37,18 +35,19 @@ module.exports = (robot) => {
       question: 'どの自転車置き場を選択しますか?',
       options: ['自転車置き場1', '自転車置き場2', '自転車置き場3'],
     });
-
-   
   });
+
+
 
 
   /* yesの場合は、周辺の自転車を探す処理.Noの場合は、ユーザからの返答を待つ */
   robot.respond('yesno', (res) => {
     if (res.json.response === true) {
       /** 借りる候補の自転車ステーションを表示する処理*/
-      res.send('自転車置き場1\n安い料金');
-      res.send('自転車置き場2\n安い料金');
-      res.send('自転車置き場3\n安い料金');
+      res.send(`現在地周辺の自転車置き場を3つ表示します`);
+      res.send('自転車置き場1');
+      res.send('自転車置き場2');
+      res.send('自転車置き場3');
       res.send({
         question: 'どの自転車置き場を選択しますか?',
         options: ['1を借りる', '2を借りる', '3を借りる']
@@ -72,6 +71,8 @@ module.exports = (robot) => {
 
   /**自転車置き場の場所をユーザに選んでもらい、それを表示する */
   robot.respond('select', (res) => {
+   
+    let i = 1;//１時間毎の時間を計測
 
     if (res.json.options[res.json.response] === '1を借りる') {
       res.send(`自転車1を借ました`);
@@ -87,9 +88,6 @@ module.exports = (robot) => {
           id = setInterval(fn, tm);
         }
       });
-      onsend: (sent) => {
-        close_select: `completed. messageId: ${sent.message.id}`;
-      }
     } else if (res.json.options[res.json.response] === '2を借りる') {
       res.send(`自転車2を借ました`);
       /*１時間毎に通知処理 */

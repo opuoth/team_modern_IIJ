@@ -7,20 +7,27 @@
 //   time - Reply with current time
 'use strict';
 
+	
+
 module.exports = (robot) => {
-  robot.respond(/PING$/i, (res) => {
-    res.send('PONG');
+  robot.join((res) => {
+    res.send({
+      question: '周辺の自転車を探しますか?'
+    });
   });
 
-  robot.respond(/ADAPTER$/i, (res) => {
-    res.send(robot.adapterName);
+  robot.respond('yesno', (res) => {
+    if (res.json.response === null) {
+      res.send(`周辺の自転車を探す処理：　res.json.question:${res.json.question}.`);
+    } else {
+      res.send(`探したくなったら「Hey」って言ってね：　res.json.question: ${res.json.response}.`);
+    }
   });
 
-  robot.respond(/ECHO (.*)$/i, (res) => {
-    res.send(res.match[1]);
+  robot.respond(/Hey$/, (res) => {
+    res.send({
+      question: '周辺の自転車を探しますか?'
+    });
   });
 
-  robot.respond(/TIME$/i, (res) => {
-    res.send(`Server time is: ${new Date()}`);
-  });
 };

@@ -8,19 +8,30 @@
 'use strict';
 
 module.exports = (robot) => {
-  robot.respond(/PING$/i, (res) => {
-    res.send('PONG');
+  
+  robot.respond(/借りる$/, (res) => {
+    res.send('自転車置き場1\n安い料金');
+    res.send('自転車置き場2\n安い料金');
+    res.send('自転車置き場3\n安い料金');
+    res.send({
+      question: '自転車置き場3\n普通の料金',
+      options: ['1を借りる', '2を借りる', '3を借りる']
+    });
+    
   });
 
-  robot.respond(/ADAPTER$/i, (res) => {
-    res.send(robot.adapterName);
-  });
+  robot.respond('select', (res) => {
 
-  robot.respond(/ECHO (.*)$/i, (res) => {
-    res.send(res.match[1]);
-  });
+    if (res.json.options[res.json.response]　=== '1を借りる') {
+      res.send(`自転車1を借ました`);
+      onsend: (sent) => {
+        close_select:`completed. messageId: ${sent.message.id}`;
+      }
+    } else if (res.json.options[res.json.response]　=== '2を借りる'){
+      res.send(`自転車2を借ました`);
+    } else if (res.json.options[res.json.response]　=== '3を借りる'){
+      res.send(`自転車3を借ました`);
+    }
+  }); 
 
-  robot.respond(/TIME$/i, (res) => {
-    res.send(`Server time is: ${new Date()}`);
-  });
 };

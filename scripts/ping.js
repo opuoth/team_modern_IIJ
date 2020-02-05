@@ -55,7 +55,7 @@ module.exports = (robot) => {
   let state = false;//ユーザーが自転車を借りているかどうかを表す(true:自転車を借りている状態,false:自転車を借りていない状態)
   */
 
-  const tm = 5000;//時間
+  const tm = 10000;//時間
   let availableStation = [['ABCD', '岩手県', '019-11-2222', 2], ['EFG', '東京', '111-1111-1111', 1], ['HIJK', '銀座', '019-47-2222', 3]];//店舗名、住所、電話番号、在庫数
   let user=new User(1,availableStation);
 
@@ -74,15 +74,8 @@ module.exports = (robot) => {
 
   /* 自転車を返す場所を探す処理と利用料金の目安を表示し、timerをstopする */
   robot.respond(/返却$/, (res) => {
-    /**返却先場所の候補を表示する */
-    res.send(`現在地周辺の自転車置き場を3つ表示します`);
-    user.availableStation.map((value, index) => {
-      res.send(`返却先(${index + 1})\n店舗名:${value[0]}\n住所:${value[1]}\n 電話番号:${value[2]}\n返却可能数:${value[3]}`)
-    })
-    res.send({
-      question: 'どの自転車置き場を選択しますか?',
-      options: ['返却先(1)', '返却先(2)', '返却先(3)'],
-    });
+    res.send(`現在地を送信してください`);
+    // ユーザ削除などもする
   });
 
 
@@ -90,15 +83,8 @@ module.exports = (robot) => {
   robot.respond('yesno', (res) => {
     if (res.json.response === true) {
 
-      /** 借りる候補の自転車ステーションを表示する処理*/
-      res.send(`現在地周辺の自転車置き場を3つ表示します`);
-      user.availableStation.map((value, index) => {
-        res.send(`貸出元(${index + 1})\n店舗名:${value[0]}\n住所:${value[1]}\n電話番号:${value[2]}\n在庫数:${value[3]}`)
-      })
-      res.send({
-        question: 'どの自転車置き場を選択しますか?',
-        options: ['貸出元(1)', '貸出元(2)', '貸出元(3)']
-      });
+      res.send(`現在地を送信してください`);
+      // ユーザ登録などもする
     } else {
       res.send(`探したくなったら「search」って言ってね`);
     }
@@ -168,7 +154,9 @@ module.exports = (robot) => {
    // getTime = () => { return i };
   });
 
-  robot.respond('map', (res) => {
+
+  robot.respond('map', (res) => {    
+    console.log(user.state);
     // requireの設定
     const mysql = require('mysql');
     
@@ -184,15 +172,10 @@ module.exports = (robot) => {
     connection.connect();
     
     // 在庫0以外のレコード取得
-    connection.query('SELECT * from shop WHERE stock <> 0;', function (err, rows, fields) {
-      if (err) { console.log('err: ' + err); } 
-      // // テスト表示POST
-      // let shop_string = '';
-      // for (let key in rows[0]) {
-      //   shop_string += `${key}: ${rows[0][key]}\n`;
-      // }
-      // res.send(shop_string);
+    let query = user.state ? 'SELECT * from shop WHERE available <> 0;' : 'SELECT * from shop WHERE stock <> 0;'
 
+    connection.query(query, function (err, rows, fields) {
+      if (err) { console.log('err: ' + err); } 
       // 距離計算 → 近い順にソート
       let distances = []
       let index = [...Array(rows.length)].map((_, i) => i) //=> [ 0, 1, ..., rows.length-1]
@@ -206,15 +189,25 @@ module.exports = (robot) => {
       index.sort(bcmp);  // distanceでソートしたインデックスリスト
       
       // TOP3 post
+      user.availableStation = [];
       for (let i in index.slice(0,3)){
-        let shop_info = `near TOP${parseInt(i)+1}\n`;
-        for (let key in rows[index[i]]) {
-          shop_info += `${key}:　${rows[index[i]][key]}\n`;
-        }
-        shop_info += `場所:　https://www.google.com/maps/dir/?api=1&destination=${rows[index[i]]['lat']},${rows[index[i]]['lon']}\n`;
-        shop_info += `直線距離スコア:　${distances[index[i]]**0.5}`;
-        res.send(shop_info);
+        let shop = rows[index[i]]
+        let shop_info = [shop.name, shop.address, shop.tel, user.state ? shop.available : shop.stock, 
+          `https://www.google.com/maps/dir/?api=1&destination=${rows[index[i]]['lat']},${rows[index[i]]['lon']}`];
+        user.availableStation.push(shop_info);
       }
+      /** 候補の自転車ステーションを表示する処理*/
+      let str1 = user.state ? '返却先' : '貸出元'
+      let str2 = user.state ? '返却可能数' : '在庫数'
+      res.send(`現在地周辺の自転車置き場を3つ表示します`);
+      user.availableStation.map((value, index) => {
+        res.send(`${str1}(${index + 1})\n店舗名:${value[0]}\n住所:${value[1]}\n電話番号:${value[2]}\n${str2}:${value[3]}\n
+        場所:${value[4]}`)
+      })
+      res.send({
+        question: 'どの自転車置き場を選択しますか?',
+        options: [`${str1}(1)`, `${str1}(2)`, `${str1}(3)`]
+      });
     });
     
     // 接続終了

@@ -14,10 +14,6 @@ module.exports = (robot) => {
       this.state=false;
       this.availableStation=availableStation;
     }
-
-    get Time(){
-      return this.i;
-    }
   }
   
 
@@ -28,7 +24,7 @@ module.exports = (robot) => {
   let state = false;//ユーザーが自転車を借りているかどうかを表す(true:自転車を借りている状態,false:自転車を借りていない状態)
   */
 
-  const tm = 5000;//時間
+  let tm=5000;
   let availableStation = [['ABCD', '岩手県', '019-11-2222', 2], ['EFG', '東京', '111-1111-1111', 1], ['HIJK', '銀座', '019-47-2222', 3]];//店舗名、住所、電話番号、在庫数
   let user=new User(1,availableStation);
 

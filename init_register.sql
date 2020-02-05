@@ -1,6 +1,7 @@
 create database if not exists rental_bicycle_DB;
 use rental_bicycle_DB;
 
+DROP TABLE IF EXISTS shop;
 create table shop(
 id int auto_increment,
 name varchar(255),
@@ -17,8 +18,9 @@ PRIMARY KEY (id)
 );
 desc shop;
 
+DROP TABLE IF EXISTS user;
 create table user(
-id int auto_increment,
+id varchar(50),
 start_time datetime,
 PRIMARY KEY (id)
 );

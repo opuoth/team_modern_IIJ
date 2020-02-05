@@ -3,10 +3,7 @@
 //
 'use strict';
 
-
 module.exports = (robot) => {
-
-  
   class User{
     constructor(time,availableStation){
       this.id;
@@ -18,7 +15,16 @@ module.exports = (robot) => {
     get Time(){return this.i};
   }
   
+  const mysql = require('mysql');    
+  // MySQLとのコネクションの作成
+  const connection = mysql.createConnection({
+    host : 'localhost',
+    user : 'root',
+    password : 'pass',
+    database: 'rental_bicycle_DB'
+  });    
 
+  
 /*
   let id;//setInterval()を変数にいれる
   let getTime;//ローカル変数「i(経過時間)」を返す関数のオブジェクト
@@ -32,15 +38,17 @@ module.exports = (robot) => {
 
   /* 最初に表示するメッセージ */
   robot.join((res) => {
+    for (let roomUser of res.message.roomUsers) {
+      
+      if (roomUser.signinId) user.id=roomUser.signinId;
+    }
     res.send({
       question: '周辺の自転車を探しますか?'
     });
   });
   robot.respond(/room/i, (res) => {
     res.send(`This room id is ${res.message.room}`);
-	});
-
-
+  });
 
 
   /* 自転車を返す場所を探す処理と利用料金の目安を表示し、timerをstopする */
@@ -55,7 +63,9 @@ module.exports = (robot) => {
     if (res.json.response === true) {
 
       res.send(`現在地を送信してください`);
-      // ユーザ登録などもする
+      // ユーザ登録
+      // 接続
+      connection.query(`INSERT INTO user (id, start_time, room_id) VALUES ("${user.id}", NOW(), "${res.message.room}")`, function (err, rows, fields) {});
     } else {
       res.send(`探したくなったら「search」って言ってね`);
     }
@@ -93,18 +103,21 @@ module.exports = (robot) => {
         clearInterval(user.id);
         res.send(`利用料金の目安:${user.Time * 200}円\n利用時間:${user.Time}時間`);
         user.state = false;
+        connection.query('DELETE FROM user WHERE id=?', user.id, function (err, rows, fields) {});
         break;
       case '返却先(2)':
         /**タイマーのストップと利用料金の目安を表示 */
         clearInterval(user.id);
         res.send(`利用料金の目安:${user.Time * 200}円\n利用時間:${user.Time}時間`);
         user.state = false;
+        connection.query('DELETE FROM user WHERE id=?', user.id, function (err, rows, fields) {});
         break;
       case '返却先(3)':
         /**タイマーのストップと利用料金の目安を表示 */
         clearInterval(user.id);
         res.send(`利用料金の目安:${user.Time * 200}円\n利用時間:${user.Time}時間`);
         user.state = false;
+        connection.query('DELETE FROM user WHERE id=?', user.id, function (err, rows, fields) {});
         break;
     }
 
@@ -126,21 +139,7 @@ module.exports = (robot) => {
   });
 
 
-  robot.respond('map', (res) => {    
-    console.log(user.state);
-    // requireの設定
-    const mysql = require('mysql');
-    
-    // MySQLとのコネクションの作成
-    const connection = mysql.createConnection({
-      host : 'localhost',
-      user : 'root',
-      password : 'pass',
-      database: 'rental_bicycle_DB'
-    });
-    
-    // 接続
-    connection.connect();
+  robot.respond('map', (res) => {
     
     // 在庫0以外のレコード取得
     let query = user.state ? 'SELECT * from shop WHERE available <> 0;' : 'SELECT * from shop WHERE stock <> 0;'
@@ -180,9 +179,5 @@ module.exports = (robot) => {
         options: [`${str1}(1)`, `${str1}(2)`, `${str1}(3)`]
       });
     });
-    
-    // 接続終了
-    connection.end();
   });
-
 }

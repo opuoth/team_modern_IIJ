@@ -17,6 +17,7 @@
     "cron": "^1.8.2",
     "lisb-forever": "^1.0.0",
     "lisb-hubot": "^3.3.2",
-    "lisb-hubot-redis-brain": "^1.0.0"
+    "lisb-hubot-redis-brain": "^1.0.0",
+    "node-clone": "^0.1.1"
   }
 }

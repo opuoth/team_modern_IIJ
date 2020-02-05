@@ -22,6 +22,7 @@ DROP TABLE IF EXISTS user;
 create table user(
 id varchar(50),
 start_time datetime,
+room_id varchar(50),
 PRIMARY KEY (id)
 );
 desc user;

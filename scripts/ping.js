@@ -98,8 +98,34 @@ module.exports = (robot) => {
     getTime=()=>{return i};
   });
 
+  robot.respond(/DB$/, (res) => {
 
-
-
+    // requireの設定
+    const mysql = require('mysql');
+    
+    // MySQLとのコネクションの作成
+    const connection = mysql.createConnection({
+      host : 'localhost',
+      user : 'root',
+      password : 'pass',
+      database: 'rental_bicycle_DB'
+    });
+    
+    // 接続
+    connection.connect();
+    
+    // userdataの取得
+    connection.query('SELECT * from shop WHERE stock <> 0;', function (err, rows, fields) {
+      if (err) { console.log('err: ' + err); } 
+      let shop_string = '';
+      for (let key in rows[0]) {
+        shop_string += `${key}: ${rows[0][key]}\n`;
+      }
+      res.send(shop_string);
+    });
+    
+    // 接続終了
+    connection.end();
+  });
 
 }

@@ -2,33 +2,6 @@
 //   Utility commands surrounding Hubot uptime.
 //
 'use strict';
-/** MYSQLの接続に必要な情報 */
-/*
-const mysql = require('mysql');
-const connection = mysql.createConnection({
-  host : '127.0.0.1',
-  user : '',
-  password : '',
-  port : '3306',
-  database: 'hira'//データベース名を変更
-});
-
-connection.connect();//データベース接続
-*/
-
-/*データ取得処理 */
-/*
-connection.query('SELECT * from user LIMIT 2;', (err, rows) => {
-  if (err) throw err;
-
-  console.log(rows);
-});
-
-connection.end();//データベースへの接続を遮断
-*/
-
-
-
 
 
 module.exports = (robot) => {
@@ -40,10 +13,6 @@ module.exports = (robot) => {
       this.i=time;
       this.state=false;
       this.availableStation=availableStation;
-    }
-
-    get Time(){
-      return this.i;
     }
   }
   

@@ -14,6 +14,8 @@ module.exports = (robot) => {
       this.state=false;
       this.availableStation=availableStation;
     }
+
+    get Time(){return this.i};
   }
   
 

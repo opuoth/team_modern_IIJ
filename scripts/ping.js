@@ -141,5 +141,57 @@ module.exports = (robot) => {
    // getTime = () => { return i };
   });
 
+  robot.respond('map', (res) => {
+    // requireの設定
+    const mysql = require('mysql');
+    
+    // MySQLとのコネクションの作成
+    const connection = mysql.createConnection({
+      host : 'localhost',
+      user : 'root',
+      password : 'pass',
+      database: 'rental_bicycle_DB'
+    });
+    
+    // 接続
+    connection.connect();
+    
+    // 在庫0以外のレコード取得
+    connection.query('SELECT * from shop WHERE stock <> 0;', function (err, rows, fields) {
+      if (err) { console.log('err: ' + err); } 
+      // // テスト表示POST
+      // let shop_string = '';
+      // for (let key in rows[0]) {
+      //   shop_string += `${key}: ${rows[0][key]}\n`;
+      // }
+      // res.send(shop_string);
+
+      // 距離計算 → 近い順にソート
+      let distances = []
+      let index = [...Array(rows.length)].map((_, i) => i) //=> [ 0, 1, ..., rows.length-1]
+      for (let row of rows) {
+        let distance = (parseFloat(res.json.lng) - row.lat)**2 + (parseFloat(res.json.lng) - row.lon)**2;
+        distances.push(distance);
+      }
+      function bcmp(v1, v2) {
+        return distances[v1] - distances[v2];
+      }
+      index.sort(bcmp);  // distanceでソートしたインデックスリスト
+      
+      // TOP3 post
+      for (let i in index.slice(0,3)){
+        let shop_info = `near TOP${parseInt(i)+1}\n`;
+        for (let key in rows[index[i]]) {
+          shop_info += `${key}:　${rows[index[i]][key]}\n`;
+        }
+        shop_info += `場所:　https://www.google.com/maps/dir/?api=1&destination=${rows[index[i]]['lat']},${rows[index[i]]['lon']}\n`;
+        shop_info += `直線距離スコア:　${distances[index[i]]**0.5}`;
+        res.send(shop_info);
+      }
+    });
+    
+    // 接続終了
+    connection.end();
+  });
 
 }

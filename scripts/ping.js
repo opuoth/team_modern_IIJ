@@ -3,6 +3,8 @@
 //
 'use strict';
 
+/* 各ユーザーごとのタイマーをtimersオブジェクトで振り分け */ 
+var timers = {};
 
 module.exports = (robot) => {
 
@@ -72,9 +74,11 @@ module.exports = (robot) => {
 
    // let i = 1;//１時間毎の時間を計測
 
+   //'select'イベントを発火したユーザーid取得
+    var id_now = res.envelope.user.id;
     /**貸し出しの際の処理 */
     switch (res.json.options[res.json.response]) {
-      case '貸出元(1)':
+    case '貸出元(1)':
         res.send(`自転車1を借ました`);
         user.state = true;
         break;
@@ -88,19 +92,19 @@ module.exports = (robot) => {
         break;
       case '返却先(1)':
         /**タイマーのストップと利用料金の目安を表示 */
-        clearInterval(user.id);
+        clearInterval(timers[id_now]);
         res.send(`利用料金の目安:${user.Time * 200}円\n利用時間:${user.Time}時間`);
         user.state = false;
         break;
       case '返却先(2)':
         /**タイマーのストップと利用料金の目安を表示 */
-        clearInterval(user.id);
+        clearInterval(timers[id_now]);
         res.send(`利用料金の目安:${user.Time * 200}円\n利用時間:${user.Time}時間`);
         user.state = false;
         break;
       case '返却先(3)':
         /**タイマーのストップと利用料金の目安を表示 */
-        clearInterval(user.id);
+        clearInterval(timers[id_now]);
         res.send(`利用料金の目安:${user.Time * 200}円\n利用時間:${user.Time}時間`);
         user.state = false;
         break;
@@ -110,12 +114,21 @@ module.exports = (robot) => {
     if (user.state === true) {
       res.send({
         text: '返す時は返却を入力すると,周辺の自転車置き場を表示します',
-        onsend: () => {
+        onsend: (sent) => {
+          // let fn = () => {
+          //   res.send(`${user.i}時間経過しました\n現在の料金目安は${user.i * 200}円です`);
+          //   user.i++;
+          // }
+
+          //送信先のユーザーid取得
+          var id = sent.unreadUsers[0].id;
+          var time = 0;
           let fn = () => {
-            res.send(`${user.i}時間経過しました\n現在の料金目安は${user.i * 200}円です`);
-            user.i++;
+            res.send(`${time}時間経過しました\n現在の料金目安は${time * 200}円です`);
+            time++;
           }
-          user.id = setInterval(fn,tm);
+          //ユーザーごとにタイマーを用意
+          timers[id] = setInterval(fn,tm);
         }
       });
     }
